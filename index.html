@@ -1,49 +1,187 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ToolGhar — All-in-One Online Tools</title>
-<meta name="description" content="Free online PDF, image, text and calculator tools in one place.">
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ToolGhar — Mini Tools</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- CDNs -->
+  <script src="https://unpkg.com/browser-image-compression@1.0.15/dist/browser-image-compression.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">🔧 <span>ToolGhar</span></div>
-  <nav>
-    <a href="#home">Home</a><a href="#tools">Tools</a><a href="#about">About</a>
-  </nav>
-</header>
+  <header><h1>ToolGhar — Mini Tools</h1></header>
+  <main>
+    <section class="tools-grid">
 
-<main id="home">
-<section class="hero">
-  <div>
-    <p class="eyebrow">100% Browser Based • Fast • Simple</p>
-    <h1>हर काम के लिए <span>एक Tool</span></h1>
-    <p class="subtitle">PDF, Image, Text, Calculator और रोज़मर्रा के useful tools एक ही जगह।</p>
-    <input id="search" class="search" placeholder="🔍  Search tool..." autocomplete="off">
-  </div>
-</section>
+      <!-- Image: JPG -> PNG -->
+      <div class="tool-card" id="jpg-png-card">
+        <h3>JPG → PNG</h3>
+        <input type="file" accept="image/jpeg,image/jpg" id="jpgToPngFile">
+        <div class="actions">
+          <button id="jpgToPngProcess">Convert</button>
+          <button id="jpgToPngDownload" style="display:none">Download PNG</button>
+        </div>
+        <div class="status" id="jpgToPngStatus"></div>
+        <div class="preview" id="jpgToPngPreview"></div>
+      </div>
 
-<section id="tools" class="section">
-  <div class="section-head">
-    <h2>All Tools</h2><span id="count"></span>
-  </div>
-  <div id="grid" class="grid"></div>
-</section>
+      <!-- Image: PNG -> JPG -->
+      <div class="tool-card" id="png-jpg-card">
+        <h3>PNG → JPG</h3>
+        <input type="file" accept="image/png" id="pngToJpgFile">
+        <label>Quality: <input type="range" id="pngToJpgQuality" min="0.1" max="1" step="0.1" value="0.9"></label>
+        <div class="actions">
+          <button id="pngToJpgProcess">Convert</button>
+          <button id="pngToJpgDownload" style="display:none">Download JPG</button>
+        </div>
+        <div class="status" id="pngToJpgStatus"></div>
+        <div class="preview" id="pngToJpgPreview"></div>
+      </div>
 
-<section id="about" class="about">
-  <h2>ToolGhar के बारे में</h2>
-  <p>ToolGhar का उद्देश्य रोज़मर्रा के छोटे-बड़े online काम आसान बनाना है। इस starter version में image conversion, PDF creation, compression और calculators जैसे tools शामिल हैं।</p>
-</section>
-</main>
+      <!-- Image Compressor -->
+      <div class="tool-card" id="compress-card">
+        <h3>Image Compressor</h3>
+        <input type="file" accept="image/*" id="compressFile">
+        <label>Target MB: <input type="number" id="compressTarget" value="1" step="0.1" min="0.1"></label>
+        <div class="actions">
+          <button id="compressProcess">Compress</button>
+          <button id="compressDownload" style="display:none">Download</button>
+        </div>
+        <div class="status" id="compressStatus"></div>
+        <div class="preview" id="compressPreview"></div>
+      </div>
 
-<div id="modal" class="modal hidden">
-  <div class="modal-card">
-    <button id="close" class="close">×</button>
-    <div id="toolContent"></div>
-  </div>
-</div>
-<script src="script.js"></script>
+      <!-- Image Resizer -->
+      <div class="tool-card" id="resize-card">
+        <h3>Image Resizer</h3>
+        <input type="file" accept="image/*" id="resizeFile">
+        <label>Width: <input type="number" id="resizeWidth" placeholder="px"></label>
+        <label>Height: <input type="number" id="resizeHeight" placeholder="px"></label>
+        <label><input type="checkbox" id="resizeLock" checked> Lock aspect ratio</label>
+        <div class="actions">
+          <button id="resizeProcess">Resize</button>
+          <button id="resizeDownload" style="display:none">Download</button>
+        </div>
+        <div class="status" id="resizeStatus"></div>
+        <div class="preview" id="resizePreview"></div>
+      </div>
+
+      <!-- Word Counter -->
+      <div class="tool-card" id="word-card">
+        <h3>Word Counter</h3>
+        <textarea id="wordText" rows="6" placeholder="Text यहाँ लिखें..."></textarea>
+        <div class="actions">
+          <button id="wordCountBtn">Count</button>
+          <button id="wordDownload" style="display:none">Download TXT</button>
+        </div>
+        <div class="status" id="wordStatus"></div>
+      </div>
+
+      <!-- Case Converter -->
+      <div class="tool-card" id="case-card">
+        <h3>Case Converter</h3>
+        <textarea id="caseText" rows="4" placeholder="Text यहाँ लिखें..."></textarea>
+        <div class="actions">
+          <button data-action="upper" class="caseBtn">UPPERCASE</button>
+          <button data-action="lower" class="caseBtn">lowercase</button>
+          <button data-action="title" class="caseBtn">Title Case</button>
+          <button id="caseDownload" style="display:none">Download TXT</button>
+        </div>
+        <div class="status" id="caseStatus"></div>
+      </div>
+
+      <!-- Percentage Calculator -->
+      <div class="tool-card" id="percent-card">
+        <h3>Percentage Calculator</h3>
+        <label>Part: <input type="number" id="percentPart"></label>
+        <label>Whole: <input type="number" id="percentWhole"></label>
+        <div class="actions">
+          <button id="percentCalc">Calculate %</button>
+        </div>
+        <div class="status" id="percentStatus"></div>
+      </div>
+
+      <!-- EMI Calculator -->
+      <div class="tool-card" id="emi-card">
+        <h3>EMI Calculator</h3>
+        <label>Loan Amount: <input type="number" id="emiAmount"></label>
+        <label>Annual Rate (%): <input type="number" id="emiRate" step="0.01"></label>
+        <label>Tenure (months): <input type="number" id="emiTenure"></label>
+        <div class="actions">
+          <button id="emiCalc">Calculate EMI</button>
+        </div>
+        <div class="status" id="emiStatus"></div>
+      </div>
+
+      <!-- GST Calculator -->
+      <div class="tool-card" id="gst-card">
+        <h3>GST Calculator</h3>
+        <label>Amount: <input type="number" id="gstAmount"></label>
+        <label>GST %: <input type="number" id="gstRate" value="18"></label>
+        <div class="actions">
+          <button id="gstCalc">Calculate</button>
+        </div>
+        <div class="status" id="gstStatus"></div>
+      </div>
+
+      <!-- Discount Calculator -->
+      <div class="tool-card" id="discount-card">
+        <h3>Discount Calculator</h3>
+        <label>Original Price: <input type="number" id="origPrice"></label>
+        <label>Discount %: <input type="number" id="discRate"></label>
+        <div class="actions">
+          <button id="discCalc">Calculate</button>
+        </div>
+        <div class="status" id="discStatus"></div>
+      </div>
+
+      <!-- BMI Calculator -->
+      <div class="tool-card" id="bmi-card">
+        <h3>BMI Calculator</h3>
+        <label>Weight (kg): <input type="number" id="bmiWeight"></label>
+        <label>Height (cm): <input type="number" id="bmiHeight"></label>
+        <div class="actions">
+          <button id="bmiCalc">Calculate BMI</button>
+        </div>
+        <div class="status" id="bmiStatus"></div>
+      </div>
+
+      <!-- Password Generator -->
+      <div class="tool-card" id="pass-card">
+        <h3>Password Generator</h3>
+        <label>Length: <input type="number" id="passLen" value="12" min="4" max="64"></label>
+        <label><input type="checkbox" id="passUpper" checked> Upper</label>
+        <label><input type="checkbox" id="passLower" checked> Lower</label>
+        <label><input type="checkbox" id="passNum" checked> Numbers</label>
+        <label><input type="checkbox" id="passSym" checked> Symbols</label>
+        <div class="actions">
+          <button id="passGen">Generate</button>
+          <button id="passCopy" style="display:none">Copy</button>
+          <button id="passDownload" style="display:none">Download TXT</button>
+        </div>
+        <div class="status" id="passStatus"></div>
+      </div>
+
+      <!-- QR Code Generator -->
+      <div class="tool-card" id="qr-card">
+        <h3>QR Code Generator</h3>
+        <input type="text" id="qrText" placeholder="URL या text डालें">
+        <label>Size: <input type="number" id="qrSize" value="200"></label>
+        <div class="actions">
+          <button id="qrGen">Generate</button>
+          <button id="qrDownload" style="display:none">Download PNG</button>
+        </div>
+        <div class="status" id="qrStatus"></div>
+        <div id="qrPreview"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer>Made with ❤️ — ToolGhar</footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
