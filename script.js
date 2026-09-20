@@ -1,83 +1,209 @@
-const tools=[
-["📄","JPG → PDF","PDF Tools","Images को एक PDF में बदलें","jpgpdf"],
-["🖼️","PDF → JPG","PDF Tools","PDF pages को JPG images में बदलें","pdfjpg"],
-["🖼️","JPG → PNG","Image Tools","JPG image को PNG में बदलें","jpgpng"],
-["🌐","PNG → JPG","Image Tools","PNG image को JPG में बदलें","pngjpg"],
-["📦","Image Compressor","Image Tools","Image size कम करें","compress"],
-["📐","Image Resizer","Image Tools","Image की width और height बदलें","resize"],
-["🔗","Merge PDF","PDF Tools","कई PDF files को जोड़ें","merge"],
-["✂️","Split PDF","PDF Tools","PDF pages को अलग करें","split"],
-["🗜️","Compress PDF","PDF Tools","PDF file का size कम करें","pdfcompress"],
-["📝","Word Counter","Text Tools","Words और characters गिनें","words"],
-["🔠","Case Converter","Text Tools","UPPERCASE / lowercase बदलें","case"],
-["🔢","Percentage Calculator","Calculators","Percentage calculate करें","percent"],
-["🎂","Age Calculator","Calculators","उम्र calculate करें","age"],
-["💳","EMI Calculator","Calculators","Loan EMI calculate करें","emi"],
-["🧾","GST Calculator","Calculators","GST amount calculate करें","gst"],
-["💰","Discount Calculator","Calculators","Discount के बाद price निकालें","discount"],
-["⚖️","BMI Calculator","Calculators","BMI calculate करें","bmi"],
-["📅","Date Calculator","Calculators","दो dates के बीच days निकालें","date"],
-["🔐","Password Generator","Security","Strong random password बनाएं","password"],
-["📱","QR Code Generator","Other Tools","Text/URL से QR code बनाएं","qr"],
-["🔄","Unit Converter","Converters","Length, weight आदि convert करें","unit"],
-["🔤","Number to Words","Other Tools","Number को words में बदलें","numwords"]
-];
+// Basic helpers
+const $ = id => document.getElementById(id);
+function kb(n){ return (n/1024).toFixed(2) + ' KB'; }
+function mb(n){ return (n/1024/1024).toFixed(2) + ' MB'; }
+function saveBlob(blob, name){ saveAs(blob, name); }
 
-const grid=document.getElementById("grid"), search=document.getElementById("search"), count=document.getElementById("count");
-function render(q=""){
- const list=tools.filter(t=>t.join(" ").toLowerCase().includes(q.toLowerCase()));
- count.textContent=`${list.length} tools`;
- grid.innerHTML=list.map(t=>`<article class="card" onclick="openTool('${t[4]}','${t[1]}','${t[3]}')"><div class="icon">${t[0]}</div><h3>${t[1]}</h3><p>${t[3]}</p><span class="badge">${t[2]}</span></article>`).join("");
-}
-search.addEventListener("input",e=>render(e.target.value)); render();
+// ---------- JPG -> PNG ----------
+$('jpgToPngProcess').addEventListener('click', async () => {
+  const file = $('jpgToPngFile').files[0];
+  const status = $('jpgToPngStatus'); const preview = $('jpgToPngPreview'); const dl = $('jpgToPngDownload');
+  status.textContent=''; preview.innerHTML=''; dl.style.display='none';
+  if(!file){ status.textContent='कृपया JPG फ़ाइल चुनें।'; return; }
+  try{
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    await img.decode();
+    const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0);
+    canvas.toBlob(blob => {
+      const name = file.name.replace(/\.[^/.]+$/,'') + '.png';
+      preview.innerHTML = `<img src="${URL.createObjectURL(blob)}">`;
+      dl.style.display='inline-block'; dl.onclick = ()=> saveBlob(blob, name);
+      status.textContent = 'Conversion complete — PNG ready.';
+    }, 'image/png');
+  }catch(e){ status.textContent = 'Error: '+e.message; console.error(e); }
+});
 
-const modal=document.getElementById("modal"), content=document.getElementById("toolContent");
-document.getElementById("close").onclick=()=>modal.classList.add("hidden");
-modal.onclick=e=>{if(e.target===modal)modal.classList.add("hidden")};
+// ---------- PNG -> JPG ----------
+$('pngToJpgProcess').addEventListener('click', async () => {
+  const file = $('pngToJpgFile').files[0]; const q = parseFloat($('pngToJpgQuality').value)||0.9;
+  const status = $('pngToJpgStatus'); const preview = $('pngToJpgPreview'); const dl = $('pngToJpgDownload');
+  status.textContent=''; preview.innerHTML=''; dl.style.display='none';
+  if(!file){ status.textContent='कृपया PNG फ़ाइल चुनें।'; return; }
+  try{
+    const img = new Image(); img.src = URL.createObjectURL(file); await img.decode();
+    const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0);
+    canvas.toBlob(blob => {
+      const name = file.name.replace(/\.[^/.]+$/,'') + '.jpg';
+      preview.innerHTML = `<img src="${URL.createObjectURL(blob)}">`;
+      dl.style.display='inline-block'; dl.onclick = ()=> saveBlob(blob, name);
+      status.textContent = 'Conversion complete — JPG ready.';
+    }, 'image/jpeg', q);
+  }catch(e){ status.textContent='Error: '+e.message; console.error(e); }
+});
 
-function openTool(type,title,desc){
- modal.classList.remove("hidden");
- content.innerHTML=`<h2>${title}</h2><p>${desc}</p>${toolUI(type)}`;
- bind(type);
-}
-function toolUI(type){
- if(["jpgpdf","jpgpng","pngjpg","compress","resize"].includes(type))
- return `<div class="drop"><input id="file" type="file" accept="image/*"><p>File चुनें और नीचे action करें</p></div><button class="btn" id="action">Process</button><div id="out"></div>`;
- if(type==="words") return `<textarea id="txt" style="width:100%;height:180px;padding:12px" placeholder="अपना text यहाँ paste करें"></textarea><div id="out" class="result">Words: 0 | Characters: 0</div>`;
- if(type==="case") return `<textarea id="txt" style="width:100%;height:180px;padding:12px"></textarea><div class="row"><button class="btn" id="upper">UPPERCASE</button><button class="btn" id="lower">lowercase</button></div>`;
- if(type==="percent") return `<input id="a" type="number" placeholder="Number"><input id="b" type="number" placeholder="%"><button class="btn" id="calc">Calculate</button><div id="out"></div>`;
- if(type==="emi") return `<input id="a" type="number" placeholder="Loan amount"><input id="b" type="number" placeholder="Annual interest %"><input id="c" type="number" placeholder="Months"><button class="btn" id="calc">Calculate EMI</button><div id="out"></div>`;
- if(type==="discount") return `<input id="a" type="number" placeholder="Original price"><input id="b" type="number" placeholder="Discount %"><button class="btn" id="calc">Calculate</button><div id="out"></div>`;
- if(type==="gst") return `<input id="a" type="number" placeholder="Amount"><input id="b" type="number" placeholder="GST %"><button class="btn" id="calc">Calculate</button><div id="out"></div>`;
- if(type==="bmi") return `<input id="a" type="number" placeholder="Weight kg"><input id="b" type="number" placeholder="Height cm"><button class="btn" id="calc">Calculate BMI</button><div id="out"></div>`;
- if(type==="password") return `<button class="btn" id="gen">Generate Password</button><div id="out" class="result"></div>`;
- if(type==="qr") return `<input id="txt" style="width:100%;padding:12px" placeholder="URL या text"><button class="btn" id="calc">Generate QR</button><div id="out"></div>`;
- return `<div class="result">यह tool अगले development phase में जोड़ा जाएगा।</div>`;
-}
-function bind(type){
- const out=document.getElementById("out");
- const file=document.getElementById("file");
- if(file) document.getElementById("action").onclick=()=>processImage(type,file.files[0],out);
- const txt=document.getElementById("txt");
- if(type==="words") txt.oninput=()=>out.textContent=`Words: ${txt.value.trim()?txt.value.trim().split(/\s+/).length:0} | Characters: ${txt.value.length}`;
- if(type==="case"){document.getElementById("upper").onclick=()=>txt.value=txt.value.toUpperCase();document.getElementById("lower").onclick=()=>txt.value=txt.value.toLowerCase();}
- if(["percent","discount","gst","bmi","emi"].includes(type))document.getElementById("calc").onclick=()=>calculate(type,out);
- if(type==="password")document.getElementById("gen").onclick=()=>out.textContent=Array.from(crypto.getRandomValues(new Uint32Array(18)),n=>"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%"[n%66]).join("");
- if(type==="qr")document.getElementById("calc").onclick=()=>{let v=encodeURIComponent(txt.value);out.innerHTML=`<img alt="QR Code" style="max-width:260px" src="https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${v}"><p>QR image ऊपर दिखाई देगी।</p>`};
-}
-function calculate(type,out){
- const a=+document.getElementById("a").value,b=+document.getElementById("b").value;
- if(type==="percent")out.innerHTML=`<div class="result">${(a*b/100).toFixed(2)}</div>`;
- if(type==="discount")out.innerHTML=`<div class="result">Final Price: ₹${(a-(a*b/100)).toFixed(2)}</div>`;
- if(type==="gst")out.innerHTML=`<div class="result">GST: ₹${(a*b/100).toFixed(2)}<br>Total: ₹${(a+a*b/100).toFixed(2)}</div>`;
- if(type==="bmi"){let h=+document.getElementById("b").value/100;out.innerHTML=`<div class="result">BMI: ${(a/(h*h)).toFixed(2)}</div>`}
- if(type==="emi"){let p=a,r=b/12/100,n=+document.getElementById("c").value;let e=p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);out.innerHTML=`<div class="result">Monthly EMI: ₹${e.toFixed(2)}</div>`}
-}
-async function processImage(type,file,out){
- if(!file){out.textContent="पहले file चुनें।";return}
- if(type==="jpgpng"||type==="pngjpg"){const url=URL.createObjectURL(file);const im=new Image();im.onload=()=>{const c=document.createElement("canvas");c.width=im.width;c.height=im.height;c.getContext("2d").drawImage(im,0,0);c.toBlob(blob=>download(blob,type==="jpgpng"?"converted.png":"converted.jpg"),type==="jpgpng"?"image/png":"image/jpeg",.92)};im.src=url;out.innerHTML="<div class='result'>Conversion complete — download शुरू हो जाएगा।</div>";return}
- if(type==="compress"){const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{const max=1400,s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>download(b,"compressed.jpg"),"image/jpeg",.65)};im.src=url;out.innerHTML="<div class='result'>Image compressed — download शुरू हो जाएगा।</div>";return}
- if(type==="resize"){const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{const w=+prompt("नई width (px)",im.width);if(!w)return;const h=Math.round(im.height*w/im.width),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);c.toBlob(b=>download(b,"resized.jpg"),"image/jpeg",.9)};im.src=url;return}
- if(type==="jpgpdf"){out.innerHTML="<div class='result'>JPG → PDF के लिए PDF engine जोड़ना अगला step है।</div>";}
-}
-function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+// ---------- Image Compressor (browser-image-compression) ----------
+$('compressProcess').addEventListener('click', async () => {
+  const file = $('compressFile').files[0]; const targetMB = parseFloat($('compressTarget').value)||1;
+  const status = $('compressStatus'); const preview = $('compressPreview'); const dl = $('compressDownload');
+  status.textContent=''; preview.innerHTML=''; dl.style.display='none';
+  if(!file){ status.textContent='कृपया image चुनें।'; return; }
+  try{
+    status.textContent='Compressing...';
+    const options = { maxSizeMB: targetMB, useWebWorker:true };
+    const compressed = await imageCompression(file, options);
+    status.textContent = `Original: ${mb(file.size)}, Compressed: ${mb(compressed.size)}`;
+    const url = URL.createObjectURL(compressed);
+    preview.innerHTML = `<img src="${url}">`;
+    dl.style.display='inline-block'; dl.onclick = ()=> saveBlob(compressed, file.name.replace(/\.[^/.]+$/,'') + '_compressed' + file.name.match(/\.[^/.]+$/)[0]);
+  }catch(e){ status.textContent='Error: '+e.message; console.error(e); }
+});
+
+// ---------- Image Resizer ----------
+$('resizeProcess').addEventListener('click', async () => {
+  const file = $('resizeFile').files[0]; const w = parseInt($('resizeWidth').value)||0; const h = parseInt($('resizeHeight').value)||0; const lock = $('resizeLock').checked;
+  const status = $('resizeStatus'); const preview = $('resizePreview'); const dl = $('resizeDownload');
+  status.textContent=''; preview.innerHTML=''; dl.style.display='none';
+  if(!file){ status.textContent='कृपया image चुनें।'; return; }
+  try{
+    const img = new Image(); img.src = URL.createObjectURL(file); await img.decode();
+    let nw = w, nh = h;
+    if(lock){
+      if(w && !h){ nh = Math.round(img.height * (w / img.width)); }
+      else if(h && !w){ nw = Math.round(img.width * (h / img.height)); }
+      else if(!w && !h){ nw = img.width; nh = img.height; }
+    } else {
+      if(!nw) nw = img.width; if(!nh) nh = img.height;
+    }
+    const canvas = document.createElement('canvas'); canvas.width = nw; canvas.height = nh;
+    const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0,nw,nh);
+    canvas.toBlob(blob => {
+      preview.innerHTML = `<img src="${URL.createObjectURL(blob)}">`;
+      dl.style.display='inline-block'; dl.onclick = ()=> saveBlob(blob, file.name.replace(/\.[^/.]+$/,'') + `_resized${nw}x${nh}` + file.name.match(/\.[^/.]+$/)[0]);
+      status.textContent = `Resized to ${nw} x ${nh}`;
+    }, 'image/jpeg', 0.92);
+  }catch(e){ status.textContent='Error: '+e.message; console.error(e); }
+});
+
+// ---------- Word Counter ----------
+$('wordCountBtn').addEventListener('click', () => {
+  const txt = $('wordText').value || '';
+  const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+  const chars = txt.length;
+  const charsNoSpace = txt.replace(/\s/g,'').length;
+  const sentences = (txt.match(/[.!?]+/g) || []).length;
+  const paragraphs = (txt.trim() ? txt.trim().split(/\n+/).length : 0);
+  $('wordStatus').textContent = `Words: ${words} | Characters: ${chars} | Characters (no spaces): ${charsNoSpace} | Sentences: ${sentences} | Paragraphs: ${paragraphs}`;
+  const dl = $('wordDownload'); dl.style.display='inline-block'; dl.onclick = ()=> {
+    const blob = new Blob([txt], {type:'text/plain;charset=utf-8'}); saveBlob(blob, 'text.txt');
+  };
+});
+
+// ---------- Case Converter ----------
+document.querySelectorAll('.caseBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const action = btn.dataset.action; let txt = $('caseText').value || '';
+    if(action==='upper') txt = txt.toUpperCase();
+    else if(action==='lower') txt = txt.toLowerCase();
+    else if(action==='title') txt = txt.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.substr(1).toLowerCase());
+    $('caseText').value = txt; $('caseStatus').textContent = 'Converted.';
+    const dl = $('caseDownload'); dl.style.display='inline-block'; dl.onclick = ()=> saveBlob(new Blob([txt],{type:'text/plain'}),'converted.txt');
+  });
+});
+
+// ---------- Percentage Calculator ----------
+$('percentCalc').addEventListener('click', () => {
+  const p = parseFloat($('percentPart').value); const w = parseFloat($('percentWhole').value);
+  if(isNaN(p) || isNaN(w) || w===0){ $('percentStatus').textContent='Invalid input.'; return; }
+  const perc = (p / w) * 100;
+  $('percentStatus').textContent = `${p} is ${perc.toFixed(2)}% of ${w}`;
+});
+
+// ---------- EMI Calculator ----------
+$('emiCalc').addEventListener('click', () => {
+  const P = parseFloat($('emiAmount').value); const annual = parseFloat($('emiRate').value); const n = parseInt($('emiTenure').value);
+  if(isNaN(P)||isNaN(annual)||isNaN(n)||n<=0){ $('emiStatus').textContent='Invalid input.'; return; }
+  const r = annual/12/100;
+  const emi = (P * r * Math.pow(1+r,n)) / (Math.pow(1+r,n)-1);
+  const total = emi * n; const interest = total - P;
+  $('emiStatus').textContent = `EMI: ₹${emi.toFixed(2)} | Total Interest: ₹${interest.toFixed(2)} | Total Payment: ₹${total.toFixed(2)}`;
+});
+
+// ---------- GST Calculator ----------
+$('gstCalc').addEventListener('click', () => {
+  const amt = parseFloat($('gstAmount').value); const rate = parseFloat($('gstRate').value);
+  if(isNaN(amt)||isNaN(rate)){ $('gstStatus').textContent='Invalid input.'; return; }
+  const gst = amt * rate / 100; const total = amt + gst;
+  $('gstStatus').textContent = `GST: ₹${gst.toFixed(2)} | Total: ₹${total.toFixed(2)}`;
+});
+
+// ---------- Discount Calculator ----------
+$('discCalc').addEventListener('click', () => {
+  const orig = parseFloat($('origPrice').value); const d = parseFloat($('discRate').value);
+  if(isNaN(orig)||isNaN(d)){ $('discStatus').textContent='Invalid input.'; return; }
+  const off = orig * d / 100; const finalP = orig - off;
+  $('discStatus').textContent = `Discount: ₹${off.toFixed(2)} | Final Price: ₹${finalP.toFixed(2)}`;
+});
+
+// ---------- BMI Calculator ----------
+$('bmiCalc').addEventListener('click', () => {
+  const w = parseFloat($('bmiWeight').value); const hcm = parseFloat($('bmiHeight').value);
+  if(isNaN(w)||isNaN(hcm)||hcm===0){ $('bmiStatus').textContent='Invalid input.'; return; }
+  const h = hcm/100; const bmi = w / (h*h);
+  let cat = 'Normal';
+  if(bmi<18.5) cat='Underweight'; else if(bmi>=25) cat='Overweight/Obese';
+  $('bmiStatus').textContent = `BMI: ${bmi.toFixed(2)} | Category: ${cat}`;
+});
+
+// ---------- Password Generator ----------
+$('passGen').addEventListener('click', () => {
+  const len = parseInt($('passLen').value)||12;
+  const useU = $('passUpper').checked; const useL = $('passLower').checked; const useN = $('passNum').checked; const useS = $('passSym').checked;
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', lower='abcdefghijklmnopqrstuvwxyz', nums='0123456789', syms='!@#$%^&*()-_=+[]{};:,.<>?';
+  let pool = ''; if(useU) pool+=upper; if(useL) pool+=lower; if(useN) pool+=nums; if(useS) pool+=syms;
+  if(!pool){ $('passStatus').textContent='Select at least one charset.'; return; }
+  let pw=''; for(let i=0;i<len;i++) pw += pool[Math.floor(Math.random()*pool.length)];
+  $('passStatus').textContent = pw;
+  $('passCopy').style.display='inline-block'; $('passDownload').style.display='inline-block';
+  $('passCopy').onclick = ()=> { navigator.clipboard?.writeText(pw); alert('Copied to clipboard'); };
+  $('passDownload').onclick = ()=> saveBlob(new Blob([pw],{type:'text/plain'}),'password.txt');
+});
+
+// ---------- QR Code Generator ----------
+$('qrGen').addEventListener('click', () => {
+  const text = $('qrText').value || ''; const size = parseInt($('qrSize').value) || 200;
+  const status = $('qrStatus'); const preview = $('qrPreview'); const dl = $('qrDownload');
+  status.textContent=''; preview.innerHTML=''; dl.style.display='none';
+  if(!text){ status.textContent='Enter text or URL.'; return; }
+  preview.innerHTML = '';
+  const qrDiv = document.createElement('div'); preview.appendChild(qrDiv);
+  new QRCode(qrDiv, { text, width: size, height: size, correctLevel: QRCode.CorrectLevel.H });
+  // create download
+  setTimeout(()=> {
+    const img = qrDiv.querySelector('img') || qrDiv.querySelector('canvas');
+    if(!img){ status.textContent='Preview ready.'; return; }
+    dl.style.display='inline-block';
+    dl.onclick = () => {
+      if(img.tagName === 'IMG'){
+        fetch(img.src).then(r=>r.blob()).then(b=> saveBlob(b, 'qrcode.png'));
+      } else {
+        img.toBlob(b => saveBlob(b,'qrcode.png'));
+      }
+    };
+    status.textContent='QR ready.';
+  }, 200);
+});
+
+// ---------- Small debug helper to spot missing elements ----------
+(function debugCheck(){
+  const ids = [
+    'jpgToPngFile','jpgToPngProcess','jpgToPngStatus','jpgToPngPreview','jpgToPngDownload',
+    'pngToJpgFile','pngToJpgProcess','pngToJpgStatus','pngToJpgPreview','pngToJpgDownload',
+    'compressFile','compressProcess','compressStatus','compressPreview','compressDownload'
+  ];
+  ids.forEach(id => { if(!$(id)) console.warn('Missing element id:', id); });
+  window.addEventListener('error', e => console.error('Global error:', e.message, e.filename+':'+e.lineno));
+  window.addEventListener('unhandledrejection', e => console.error('Unhandled rejection:', e.reason));
+})();
