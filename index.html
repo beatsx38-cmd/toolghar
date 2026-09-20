@@ -3,20 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ToolGhar — Mini Tools</title>
+  <title>ToolGhar Full Suite</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- CDNs -->
+  <!-- Libraries -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://unpkg.com/browser-image-compression@1.0.15/dist/browser-image-compression.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-  <header><h1>ToolGhar — Mini Tools</h1></header>
+  <header><h1>ToolGhar Full Suite</h1></header>
   <main>
     <section class="tools-grid">
 
-      <!-- Image: JPG -> PNG -->
-      <div class="tool-card" id="jpg-png-card">
+      <!-- Images -->
+      <div class="tool-card" id="jpg-png">
         <h3>JPG → PNG</h3>
         <input type="file" accept="image/jpeg,image/jpg" id="jpgToPngFile">
         <div class="actions">
@@ -27,11 +30,10 @@
         <div class="preview" id="jpgToPngPreview"></div>
       </div>
 
-      <!-- Image: PNG -> JPG -->
-      <div class="tool-card" id="png-jpg-card">
+      <div class="tool-card" id="png-jpg">
         <h3>PNG → JPG</h3>
         <input type="file" accept="image/png" id="pngToJpgFile">
-        <label>Quality: <input type="range" id="pngToJpgQuality" min="0.1" max="1" step="0.1" value="0.9"></label>
+        <label>Quality <input type="range" id="pngToJpgQuality" min="0.1" max="1" step="0.1" value="0.9"></label>
         <div class="actions">
           <button id="pngToJpgProcess">Convert</button>
           <button id="pngToJpgDownload" style="display:none">Download JPG</button>
@@ -40,11 +42,67 @@
         <div class="preview" id="pngToJpgPreview"></div>
       </div>
 
-      <!-- Image Compressor -->
-      <div class="tool-card" id="compress-card">
+      <div class="tool-card" id="jpg-pdf">
+        <h3>JPG → PDF</h3>
+        <input type="file" accept="image/*" id="jpgToPdfFile" multiple>
+        <label>Page Size <select id="jpgToPdfSize"><option value="A4">A4</option><option value="LETTER">Letter</option><option value="AUTO">Auto</option></select></label>
+        <div class="actions">
+          <button id="jpgToPdfProcess">Convert</button>
+          <button id="jpgToPdfDownload" style="display:none">Download PDF</button>
+        </div>
+        <div class="status" id="jpgToPdfStatus"></div>
+        <div class="preview" id="jpgToPdfPreview"></div>
+      </div>
+
+      <!-- PDF -->
+      <div class="tool-card" id="pdf-jpg">
+        <h3>PDF → JPG</h3>
+        <input type="file" accept="application/pdf" id="pdfToJpgFile">
+        <label>Scale <input type="number" id="pdfToJpgScale" value="1" step="0.25" min="0.25"></label>
+        <div class="actions">
+          <button id="pdfToJpgProcess">Extract Pages</button>
+        </div>
+        <div class="status" id="pdfToJpgStatus"></div>
+        <div class="preview" id="pdfToJpgPreview"></div>
+      </div>
+
+      <div class="tool-card" id="merge-pdf">
+        <h3>Merge PDF</h3>
+        <input type="file" accept="application/pdf" id="mergePdfFiles" multiple>
+        <div class="actions">
+          <button id="mergePdfProcess">Merge</button>
+          <button id="mergePdfDownload" style="display:none">Download Merged PDF</button>
+        </div>
+        <div class="status" id="mergePdfStatus"></div>
+      </div>
+
+      <div class="tool-card" id="split-pdf">
+        <h3>Split PDF</h3>
+        <input type="file" accept="application/pdf" id="splitPdfFile">
+        <label>Split pages (comma ranges) <input type="text" id="splitRanges" placeholder="e.g., 1-2,3,4-5"></label>
+        <div class="actions">
+          <button id="splitPdfProcess">Split</button>
+        </div>
+        <div class="status" id="splitPdfStatus"></div>
+        <div class="preview" id="splitPdfPreview"></div>
+      </div>
+
+      <div class="tool-card" id="compress-pdf">
+        <h3>Compress PDF</h3>
+        <input type="file" accept="application/pdf" id="compressPdfFile">
+        <label>Image Quality 0.1-1 <input type="range" id="compressPdfQuality" min="0.1" max="1" step="0.1" value="0.8"></label>
+        <div class="actions">
+          <button id="compressPdfProcess">Compress</button>
+          <button id="compressPdfDownload" style="display:none">Download Compressed PDF</button>
+        </div>
+        <div class="status" id="compressPdfStatus"></div>
+      </div>
+
+      <!-- Image tools -->
+      <div class="tool-card" id="image-compress">
         <h3>Image Compressor</h3>
         <input type="file" accept="image/*" id="compressFile">
-        <label>Target MB: <input type="number" id="compressTarget" value="1" step="0.1" min="0.1"></label>
+        <label>Target MB <input type="number" id="compressTarget" value="1" step="0.1" min="0.1"></label>
         <div class="actions">
           <button id="compressProcess">Compress</button>
           <button id="compressDownload" style="display:none">Download</button>
@@ -53,12 +111,11 @@
         <div class="preview" id="compressPreview"></div>
       </div>
 
-      <!-- Image Resizer -->
-      <div class="tool-card" id="resize-card">
+      <div class="tool-card" id="image-resize">
         <h3>Image Resizer</h3>
         <input type="file" accept="image/*" id="resizeFile">
-        <label>Width: <input type="number" id="resizeWidth" placeholder="px"></label>
-        <label>Height: <input type="number" id="resizeHeight" placeholder="px"></label>
+        <label>Width <input type="number" id="resizeWidth"></label>
+        <label>Height <input type="number" id="resizeHeight"></label>
         <label><input type="checkbox" id="resizeLock" checked> Lock aspect ratio</label>
         <div class="actions">
           <button id="resizeProcess">Resize</button>
@@ -68,10 +125,10 @@
         <div class="preview" id="resizePreview"></div>
       </div>
 
-      <!-- Word Counter -->
-      <div class="tool-card" id="word-card">
+      <!-- Text tools -->
+      <div class="tool-card" id="word-counter">
         <h3>Word Counter</h3>
-        <textarea id="wordText" rows="6" placeholder="Text यहाँ लिखें..."></textarea>
+        <textarea id="wordText" rows="5" placeholder="Text यहाँ लिखें..."></textarea>
         <div class="actions">
           <button id="wordCountBtn">Count</button>
           <button id="wordDownload" style="display:none">Download TXT</button>
@@ -79,8 +136,7 @@
         <div class="status" id="wordStatus"></div>
       </div>
 
-      <!-- Case Converter -->
-      <div class="tool-card" id="case-card">
+      <div class="tool-card" id="case-converter">
         <h3>Case Converter</h3>
         <textarea id="caseText" rows="4" placeholder="Text यहाँ लिखें..."></textarea>
         <div class="actions">
@@ -92,66 +148,52 @@
         <div class="status" id="caseStatus"></div>
       </div>
 
-      <!-- Percentage Calculator -->
-      <div class="tool-card" id="percent-card">
+      <!-- Calculators -->
+      <div class="tool-card" id="percentage">
         <h3>Percentage Calculator</h3>
-        <label>Part: <input type="number" id="percentPart"></label>
-        <label>Whole: <input type="number" id="percentWhole"></label>
-        <div class="actions">
-          <button id="percentCalc">Calculate %</button>
-        </div>
+        <label>Part <input type="number" id="percentPart"></label>
+        <label>Whole <input type="number" id="percentWhole"></label>
+        <div class="actions"><button id="percentCalc">Calculate</button></div>
         <div class="status" id="percentStatus"></div>
       </div>
 
-      <!-- EMI Calculator -->
-      <div class="tool-card" id="emi-card">
+      <div class="tool-card" id="emi">
         <h3>EMI Calculator</h3>
-        <label>Loan Amount: <input type="number" id="emiAmount"></label>
-        <label>Annual Rate (%): <input type="number" id="emiRate" step="0.01"></label>
-        <label>Tenure (months): <input type="number" id="emiTenure"></label>
-        <div class="actions">
-          <button id="emiCalc">Calculate EMI</button>
-        </div>
+        <label>Loan Amount <input type="number" id="emiAmount"></label>
+        <label>Annual Rate % <input type="number" id="emiRate" step="0.01"></label>
+        <label>Tenure months <input type="number" id="emiTenure"></label>
+        <div class="actions"><button id="emiCalc">Calculate</button></div>
         <div class="status" id="emiStatus"></div>
       </div>
 
-      <!-- GST Calculator -->
-      <div class="tool-card" id="gst-card">
+      <div class="tool-card" id="gst">
         <h3>GST Calculator</h3>
-        <label>Amount: <input type="number" id="gstAmount"></label>
-        <label>GST %: <input type="number" id="gstRate" value="18"></label>
-        <div class="actions">
-          <button id="gstCalc">Calculate</button>
-        </div>
+        <label>Amount <input type="number" id="gstAmount"></label>
+        <label>GST % <input type="number" id="gstRate" value="18"></label>
+        <div class="actions"><button id="gstCalc">Calculate</button></div>
         <div class="status" id="gstStatus"></div>
       </div>
 
-      <!-- Discount Calculator -->
-      <div class="tool-card" id="discount-card">
+      <div class="tool-card" id="discount">
         <h3>Discount Calculator</h3>
-        <label>Original Price: <input type="number" id="origPrice"></label>
-        <label>Discount %: <input type="number" id="discRate"></label>
-        <div class="actions">
-          <button id="discCalc">Calculate</button>
-        </div>
+        <label>Original Price <input type="number" id="origPrice"></label>
+        <label>Discount % <input type="number" id="discRate"></label>
+        <div class="actions"><button id="discCalc">Calculate</button></div>
         <div class="status" id="discStatus"></div>
       </div>
 
-      <!-- BMI Calculator -->
-      <div class="tool-card" id="bmi-card">
+      <div class="tool-card" id="bmi">
         <h3>BMI Calculator</h3>
-        <label>Weight (kg): <input type="number" id="bmiWeight"></label>
-        <label>Height (cm): <input type="number" id="bmiHeight"></label>
-        <div class="actions">
-          <button id="bmiCalc">Calculate BMI</button>
-        </div>
+        <label>Weight kg <input type="number" id="bmiWeight"></label>
+        <label>Height cm <input type="number" id="bmiHeight"></label>
+        <div class="actions"><button id="bmiCalc">Calculate</button></div>
         <div class="status" id="bmiStatus"></div>
       </div>
 
-      <!-- Password Generator -->
-      <div class="tool-card" id="pass-card">
+      <!-- Utility tools -->
+      <div class="tool-card" id="password">
         <h3>Password Generator</h3>
-        <label>Length: <input type="number" id="passLen" value="12" min="4" max="64"></label>
+        <label>Length <input type="number" id="passLen" value="12" min="4" max="64"></label>
         <label><input type="checkbox" id="passUpper" checked> Upper</label>
         <label><input type="checkbox" id="passLower" checked> Lower</label>
         <label><input type="checkbox" id="passNum" checked> Numbers</label>
@@ -159,22 +201,59 @@
         <div class="actions">
           <button id="passGen">Generate</button>
           <button id="passCopy" style="display:none">Copy</button>
-          <button id="passDownload" style="display:none">Download TXT</button>
+          <button id="passDownload" style="display:none">Download</button>
         </div>
         <div class="status" id="passStatus"></div>
       </div>
 
-      <!-- QR Code Generator -->
-      <div class="tool-card" id="qr-card">
+      <div class="tool-card" id="qr">
         <h3>QR Code Generator</h3>
         <input type="text" id="qrText" placeholder="URL या text डालें">
-        <label>Size: <input type="number" id="qrSize" value="200"></label>
-        <div class="actions">
-          <button id="qrGen">Generate</button>
-          <button id="qrDownload" style="display:none">Download PNG</button>
-        </div>
+        <label>Size <input type="number" id="qrSize" value="200"></label>
+        <div class="actions"><button id="qrGen">Generate</button><button id="qrDownload" style="display:none">Download PNG</button></div>
         <div class="status" id="qrStatus"></div>
         <div id="qrPreview"></div>
+      </div>
+
+      <div class="tool-card" id="unit-converter">
+        <h3>Unit Converter</h3>
+        <label>Category
+          <select id="unitCategory">
+            <option value="length">Length</option>
+            <option value="weight">Weight</option>
+            <option value="temperature">Temperature</option>
+          </select>
+        </label>
+        <label>From <input type="text" id="unitFrom" placeholder="e.g., m, kg, C"></label>
+        <label>To <input type="text" id="unitTo" placeholder="e.g., cm, g, F"></label>
+        <label>Value <input type="number" id="unitValue"></label>
+        <div class="actions"><button id="unitConvert">Convert</button></div>
+        <div class="status" id="unitStatus"></div>
+      </div>
+
+      <div class="tool-card" id="num-words">
+        <h3>Number to Words</h3>
+        <input type="number" id="numWordsInput" placeholder="Number डालें">
+        <label>Language
+          <select id="numWordsLang"><option value="en">English</option><option value="hi">Hindi</option></select>
+        </label>
+        <div class="actions"><button id="numWordsBtn">Convert</button></div>
+        <div class="status" id="numWordsStatus"></div>
+      </div>
+
+      <div class="tool-card" id="date-calc">
+        <h3>Date Calculator</h3>
+        <label>From <input type="date" id="dateFrom"></label>
+        <label>To <input type="date" id="dateTo"></label>
+        <div class="actions"><button id="dateCalcBtn">Calculate Days</button></div>
+        <div class="status" id="dateCalcStatus"></div>
+      </div>
+
+      <div class="tool-card" id="age-calc">
+        <h3>Age Calculator</h3>
+        <label>Birthdate <input type="date" id="ageBirth"></label>
+        <div class="actions"><button id="ageCalcBtn">Calculate Age</button></div>
+        <div class="status" id="ageCalcStatus"></div>
       </div>
 
     </section>
