@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToolGhar — All-in-One Online Tools</title>
+<meta name="description" content="Free online PDF, image, text and calculator tools in one place.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🔧 <span>ToolGhar</span></div>
+  <nav>
+    <a href="#home">Home</a><a href="#tools">Tools</a><a href="#about">About</a>
+  </nav>
+</header>
+
+<main id="home">
+<section class="hero">
+  <div>
+    <p class="eyebrow">100% Browser Based • Fast • Simple</p>
+    <h1>हर काम के लिए <span>एक Tool</span></h1>
+    <p class="subtitle">PDF, Image, Text, Calculator और रोज़मर्रा के useful tools एक ही जगह।</p>
+    <input id="search" class="search" placeholder="🔍  Search tool..." autocomplete="off">
+  </div>
+</section>
+
+<section id="tools" class="section">
+  <div class="section-head">
+    <h2>All Tools</h2><span id="count"></span>
+  </div>
+  <div id="grid" class="grid"></div>
+</section>
+
+<section id="about" class="about">
+  <h2>ToolGhar के बारे में</h2>
+  <p>ToolGhar का उद्देश्य रोज़मर्रा के छोटे-बड़े online काम आसान बनाना है। इस starter version में image conversion, PDF creation, compression और calculators जैसे tools शामिल हैं।</p>
+</section>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <button id="close" class="close">×</button>
+    <div id="toolContent"></div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
